@@ -1,7 +1,7 @@
 import { type Action, fail, type RequestEvent } from '@sveltejs/kit';
-import { z, ZodTypeAny } from 'zod';
+import { z, type ZodTypeAny } from 'zod';
 
-import { ValidatedActionData, ValidatorFailArgs } from '../types';
+import type { ValidatedActionData, ValidatorFailArgs } from '../types';
 
 function filterFormDataValues<T, U extends z.ZodTypeDef>(
 	formData: FormData,
@@ -45,41 +45,44 @@ export interface ValidateOptions<T extends ZodTypeAny> {
 	valueExcludeFields?: Set<keyof z.infer<T>>;
 }
 
-export function validate<T extends ZodTypeAny>(
+export function validatedAction<T extends ZodTypeAny>(
 	formId: string,
 	schema: T,
 	action: (
-		event: RequestEvent & {
+		args: {
 			data: z.infer<T>;
-			fail: (args: ValidatorFailArgs<T>) => ReturnType<typeof fail<ValidatedActionData<T>>>;
-		}
+			wrapResult: (args: ValidatorFailArgs<T>) => ValidatedActionData<T>;
+		},
+		event: RequestEvent
 	) => ReturnType<Action>,
 	options: ValidateOptions<T> = {}
 ) {
 	const { valueExcludeFields = new Set() } = options;
 	return async (event: RequestEvent) => {
 		const formData = await event.request.formData();
+		console.log(formData);
 
 		const { data, errors, values } = await validateFormDataAsync(schema, formData, options);
 
 		if (errors) return fail(400, { values, fieldErrors: errors });
 
-		const actionData = await action({
-			...event,
-			data,
-			fail: ({ fieldErrors, formMessage, actionData }: ValidatorFailArgs<T>) =>
-				fail(400, {
-					formId,
+		const actionResult = await action(
+			{
+				data,
+				wrapResult: (args) => ({
 					values: filterFormDataValues(formData, valueExcludeFields),
-					fieldErrors,
-					actionData,
-					formMessage
+					...args,
+					formId
 				})
-		});
+			},
+			event
+		);
 
-		return {
-			actionData,
-			formId
-		};
+		if (actionResult) {
+			if (!('formId' in actionResult) && !('formId' in actionResult.data)) {
+				throw new Error('Missing formId in action result');
+			}
+			return actionResult;
+		}
 	};
 }

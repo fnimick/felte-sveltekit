@@ -30,7 +30,8 @@ export interface ValidatedFormOptions {
 }
 
 export function createValidatedForm<T extends ZodTypeAny>(
-	schema: ZodTypeAny,
+	formId: string,
+	schema: T,
 	{
 		extend,
 		...config
@@ -50,13 +51,6 @@ export function createValidatedForm<T extends ZodTypeAny>(
 
 	function form(node: HTMLFormElement) {
 		const formInternalAction = formInternal(node);
-
-		const formId: string | undefined = (
-			HTMLFormElement.prototype.cloneNode.call(form) as HTMLFormElement
-		).formId;
-		if (formId == null) {
-			throw new Error("Missing formId necessary for 'felte-sveltekit' form");
-		}
 
 		const unsubscribe = page.subscribe(({ form }) => {
 			if (isValidatedResultForForm<T>(form, formId)) {

@@ -18,8 +18,20 @@ export type FetchResponse = SuccessResponse | FailResponse;
 
 type Obj = Record<string, any>;
 
-// eslint-disable-next-line @typescript-eslint/no-empty-function
-export function createSubmitHandler<Data extends Obj>(submit: SubmitFunction = () => {}) {
+// convert FormData files to URLSearchParams strings per
+// https://github.com/microsoft/TypeScript/issues/30584#issuecomment-890515551
+function formDataToSearchParams(data: FormData): URLSearchParams {
+	const convertedFormEntries = Array.from(data, ([key, value]) => [
+		key,
+		typeof value === 'string' ? value : value.name
+	]);
+	return new URLSearchParams(convertedFormEntries);
+}
+
+export function createSubmitHandler<Data extends Obj>(
+	// eslint-disable-next-line @typescript-eslint/no-empty-function
+	submit: SubmitFunction = () => {}
+) {
 	return async function onSubmit(_data: Data, context: SubmitContext<Data>) {
 		const { form } = context;
 		if (!form) return;
@@ -61,49 +73,37 @@ export function createSubmitHandler<Data extends Obj>(submit: SubmitFunction = (
 			(HTMLFormElement.prototype.cloneNode.call(form) as HTMLFormElement).action
 		);
 
-		const formId: string | undefined = (
-			HTMLFormElement.prototype.cloneNode.call(form) as HTMLFormElement
-		).formId;
-		if (formId == null) {
-			throw new Error("Missing formId necessary for 'felte-sveltekit' form");
-		}
-
-		data.append('formId', formId);
-
 		const method =
 			form.method.toLowerCase() === 'get'
 				? 'get'
 				: action.searchParams.get('_method') || form.method;
 		let enctype = form.enctype;
 
+		if (method === 'get') {
+			throw new Error('felte-sveltekit is supported on POST forms only');
+		}
+
 		if (form.querySelector('input[type="file"]')) {
 			enctype = 'multipart/form-data';
 		}
 
-		let fetchOptions: RequestInit;
-
-		if (method === 'get') {
-			// convert FormData files to URLSearchParams strings per
-			// https://github.com/microsoft/TypeScript/issues/30584#issuecomment-890515551
-			data.forEach((value, key) => {
-				action.searchParams.append(key, typeof value === 'string' ? value : value.name);
-			});
-			fetchOptions = { method, headers: { Accept: 'application/json' } };
-		} else {
-			fetchOptions = {
-				method,
-				body: data,
-				headers: {
-					// If `Content-Type` is set on multipart/form-data, boundary will be missing
-					// See: https://github.com/pablo-abc/felte/issues/165
-					...(enctype !== 'multipart/form-data' && {
-						'Content-Type': enctype
-					}),
-					Accept: 'application/json',
-					'x-sveltekit-action': 'true'
-				}
-			};
+		let body: FormData | URLSearchParams = data;
+		if (enctype === 'application/x-www-form-urlencoded') {
+			body = formDataToSearchParams(data);
 		}
+		const fetchOptions = {
+			method,
+			body,
+			headers: {
+				// If `Content-Type` is set on multipart/form-data, boundary will be missing
+				// See: https://github.com/pablo-abc/felte/issues/165
+				...(enctype !== 'multipart/form-data' && {
+					'Content-Type': enctype
+				}),
+				Accept: 'application/json',
+				'x-sveltekit-action': 'true'
+			}
+		} satisfies RequestInit;
 
 		const controller = new AbortController();
 		let cancelled = false;
