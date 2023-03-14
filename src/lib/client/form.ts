@@ -60,12 +60,11 @@ export function createValidatedForm<T extends ZodTypeAny>(
 
 		const unsubscribe = page.subscribe(({ form }) => {
 			if (isValidatedResultForForm<T>(form, formId)) {
-				if (form.fieldErrors) {
-					createFormResult.setErrors(form.fieldErrors);
-				}
-				if (form.formMessage) {
-					message.set(form.formMessage);
-				}
+				// Typescript can't prove that empty object is assignable to the error
+				// store, but it is.
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				createFormResult.setErrors(form.fieldErrors ?? ({} as any));
+				message.set(form.formMessage);
 			}
 		});
 
