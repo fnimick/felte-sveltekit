@@ -60,7 +60,6 @@ export function validatedAction<T extends ZodTypeAny>(
 	const { valueExcludeFields = new Set() } = options;
 	return async (event: RequestEvent) => {
 		const formData = await event.request.formData();
-		console.log(formData);
 
 		const { data, errors, values } = await validateFormDataAsync(schema, formData, options);
 

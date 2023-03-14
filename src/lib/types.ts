@@ -10,13 +10,13 @@ export interface FormMessage {
 export interface ValidatorFailArgs<T extends ZodTypeAny> {
 	fieldErrors?: AssignableErrors<z.infer<T>>;
 	formMessage?: FormMessage;
-	actionData?: unknown;
+	data?: unknown;
+	values?: Record<string, FormDataEntryValue>;
 }
 
 export interface ValidatedActionData<T extends ZodTypeAny>
 	extends ValidatorFailArgs<T>,
 		Record<string, unknown> {
-	values: Record<string, FormDataEntryValue>;
 	formId: string;
 }
 
