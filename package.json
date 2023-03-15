@@ -18,8 +18,9 @@
   },
   "scripts": {
     "dev": "vite dev",
-    "build": "svelte-kit sync && svelte-package && publint",
-    "prepublishOnly": "echo 'Did you mean to publish `./package/`, instead of `./`?' && exit 1",
+    "build": "vite build && npm run test && npm run package",
+    "package": "svelte-kit sync && svelte-package && publint",
+    "prepublishOnly": "npm run package && publint",
     "test": "playwright test",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
