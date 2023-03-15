@@ -94,7 +94,8 @@ updates to `$page.form` are consumed only by the corresponding form instances.
 ```svelte
 <script lang="ts">
   import { onDestroy } from 'svelte';
-  import { createValidatedForm, SuperDebug } from 'felte-sveltekit/client';
+  import { createValidatedForm } from 'felte-sveltekit/client';
+  import { SuperDebug } from 'felte-sveltekit/client/SuperDebug.svelte';
 
   import { page } from '$app/stores';
   import { userSchema } from './schema';

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onDestroy } from 'svelte';
-  import { createValidatedForm, SuperDebug } from '$lib/client';
+  import { createValidatedForm } from '$lib/client';
+  import SuperDebug from '$lib/client/SuperDebug.svelte';
 
   import { page } from '$app/stores';
   import { userSchema } from './schema';
