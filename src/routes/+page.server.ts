@@ -25,7 +25,7 @@ export const actions = {
       // `data` can be any type, and `formMessage` is a structured type for
       // displaying form-level errors and other similar messages.
       return wrapResult({
-        data: { status: 'created' },
+        result: { status: 'created' },
         formMessage: { message: `User ${name} created with age ${age}`, type: 'success' }
       });
     },

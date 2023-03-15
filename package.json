@@ -1,6 +1,6 @@
 {
   "name": "felte-sveltekit",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "author": "Francis Nimick <fnimick@gmail.com>",
   "description": "A simple validation connector for Felte + Sveltekit Form Actions",
   "keywords": [

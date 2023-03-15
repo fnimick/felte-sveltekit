@@ -6,7 +6,7 @@
   import { page } from '$app/stores';
   import { userSchema } from './schema';
 
-  const { form, errors, message, isSubmitting, data, unsubscribe } = createValidatedForm(
+  const { form, data, errors, message, result, isSubmitting, unsubscribe } = createValidatedForm(
     'demoForm',
     userSchema,
     undefined,
@@ -48,4 +48,8 @@
 
 {#if $message}
   <p>{$message.message}</p>
+{/if}
+
+{#if $result}
+  Result: <pre>{JSON.stringify($result)}</pre>
 {/if}

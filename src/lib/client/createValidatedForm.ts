@@ -24,6 +24,7 @@ export type CreateFormResult<Data extends Obj> = Form<Data> &
 
 export type ValidatedForm<T extends ZodTypeAny> = CreateFormResult<z.infer<T>> & {
   message: Readable<FormMessage | undefined>;
+  result: Readable<unknown>;
   unsubscribe: Unsubscriber;
 };
 
@@ -41,6 +42,7 @@ export function createValidatedForm<T extends ZodTypeAny>(
   { submit }: ValidatedFormOptions = {}
 ): ValidatedForm<T> {
   const message = writable<FormMessage | undefined>();
+  const result = writable<unknown>();
 
   const { form, ...createFormResult } = createForm<z.infer<T>>({
     ...config,
@@ -66,8 +68,9 @@ export function createValidatedForm<T extends ZodTypeAny>(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       createFormResult.setErrors(form.fieldErrors ?? ({} as any));
       message.set(form.formMessage);
+      result.set(form.result);
     }
   });
 
-  return { form, ...createFormResult, message, unsubscribe };
+  return { form, ...createFormResult, message, result, unsubscribe };
 }

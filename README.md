@@ -77,7 +77,7 @@ export const actions = {
       // `data` can be any type, and `formMessage` is a structured type for
       // displaying form-level errors and other similar messages.
       return wrapResult({
-        data: { status: 'created' },
+        result: { status: 'created' },
         formMessage: { message: `User ${name} created with age ${age}`, type: 'success' }
       });
     },
@@ -102,7 +102,7 @@ updates to `$page.form` are consumed only by the corresponding form instances.
   import { page } from '$app/stores';
   import { userSchema } from './schema';
 
-  const { form, errors, message, isSubmitting, data, unsubscribe } = createValidatedForm(
+  const { form, data, errors, message, result, isSubmitting, unsubscribe } = createValidatedForm(
     'demoForm',
     userSchema
   );
@@ -136,6 +136,10 @@ updates to `$page.form` are consumed only by the corresponding form instances.
 
 {#if $message}
   <p>{$message.message}</p>
+{/if}
+
+{#if $result}
+  Result: <pre>{JSON.stringify($result)}</pre>
 {/if}
 ```
 
