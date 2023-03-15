@@ -1,4 +1,6 @@
-<!-- This is copied with love from `svelte-superform` -->
+<!-- This is copied with love from `svelte-superform`.
+
+	Copyright (c) 2023 Andreas Söderlund -->
 <script lang="ts">
 	import { page } from '$app/stores';
 

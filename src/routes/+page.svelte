@@ -1,36 +1,50 @@
 <script lang="ts">
-	import { browser } from '$app/environment';
-	import { enhance } from '$app/forms';
+	import { onDestroy } from 'svelte';
+	import { createValidatedForm, SuperDebug } from '$lib/client';
+
 	import { page } from '$app/stores';
-	import { createValidatedForm } from '$lib';
-	import SuperDebug from '$lib/client/SuperDebug.svelte';
 	import { userSchema } from './schema';
-	import TextInput from './TextInput.svelte';
-	const { form, errors, isSubmitting } = createValidatedForm('demoForm', userSchema);
+
+	const { form, errors, message, isSubmitting, data, unsubscribe } = createValidatedForm(
+		'demoForm',
+		userSchema,
+		undefined,
+		{
+			submit:
+				() =>
+				({ update }) => {
+					update({ reset: false });
+				}
+		}
+	);
+
+	onDestroy(unsubscribe);
 </script>
 
-<SuperDebug data={{ $errors, page: $page.form }} />
+<SuperDebug data={{ $data, $errors, page: $page.form }} />
 
-<form method="POST" use:form class="flex w-full max-w-lg flex-col gap-y-5 p-2 lg:p-4">
-	<TextInput
-		name="name"
-		error={browser ? $errors.name : $page.form?.fieldErrors?.username}
-		value={browser ? undefined : $page.form?.values?.username}
-	>
-		<svelte:fragment slot="label">Name</svelte:fragment></TextInput
-	>
-	<TextInput
-		name="email"
-		error={browser ? $errors.email : $page.form?.fieldErrors?.password}
-		value={browser ? undefined : $page.form?.values?.password}
-		><svelte:fragment slot="label">Email</svelte:fragment></TextInput
-	>
-	<div class="flex items-center justify-between">
-		<button
-			type="submit"
-			class="btn variant-filled-primary"
-			disabled={$isSubmitting}
-			data-cy="loginpage-button-submit">Submit</button
-		>
-	</div>
+<form method="POST" use:form>
+	<label for="name">Name</label>
+	<input id="name" name="name" type="text" value={$data.name ?? ''} />
+	{#if $errors.name}
+		<p>{$errors.name.join(', ')}</p>
+	{/if}
+
+	<label for="email">Email</label>
+	<input id="email" name="email" type="email" value={$data.email ?? ''} />
+	{#if $errors.email}
+		<p>{$errors.email.join(', ')}</p>
+	{/if}
+
+	<label for="age">Age</label>
+	<!-- Notice the namespaced name here -->
+	<input id="age" name="other.age" type="number" value={$data.other?.age ?? ''} />
+	{#if $errors.other?.age}
+		<p>{$errors.other.age.join(', ')}</p>
+	{/if}
+	<button type="submit" disabled={$isSubmitting}>Submit</button>
 </form>
+
+{#if $message}
+	<p>{$message.message}</p>
+{/if}

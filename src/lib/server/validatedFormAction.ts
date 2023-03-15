@@ -1,15 +1,39 @@
+import { _update, type AssignableErrors } from '@felte/core';
 import { type Action, fail, type RequestEvent } from '@sveltejs/kit';
-import { z, type ZodTypeAny } from 'zod';
+import { z, ZodError, type ZodTypeAny } from 'zod';
+import { preprocessFormData } from 'zod-form-data';
 
 import type { ValidatedActionData, ValidatorFailArgs } from '../types';
 
-function filterFormDataValues<T, U extends z.ZodTypeDef>(
-	formData: FormData,
-	valueExcludeFields: Set<keyof z.infer<z.Schema<T, U, unknown>>>
+// Old function used for filtering raw FormData entries. No longer used now that
+// we have nested values.
+// function filterFormDataValues<T extends ZodTypeAny>(
+// formData: FormData, valueExcludeFields: Set<keyof z.infer<T>>
+// ) {
+//  return Object.fromEntries( Array.from(formData).filter(([key]) =>
+//    !valueExcludeFields.has(key as keyof T))
+//  );
+// }
+
+function filterDataValues<T extends ZodTypeAny>(
+	data: Partial<z.infer<T>>,
+	valueExcludeFields: Set<keyof z.infer<T>>
 ) {
 	return Object.fromEntries(
-		Array.from(formData).filter(([key]) => !valueExcludeFields.has(key as keyof T))
+		Object.entries(data).filter(([key]) => !valueExcludeFields.has(key as keyof T))
 	);
+}
+
+// This function is taken from @felte/validator-zod
+function shapeErrors<T extends ZodTypeAny>(errors: ZodError): AssignableErrors<z.infer<T>> {
+	return errors.issues.reduce((err, value) => {
+		/* istanbul ignore next */
+		if (!value.path) return err;
+		return _update(err, value.path.join('.'), (currentValue: undefined | string[]) => {
+			if (!currentValue || !Array.isArray(currentValue)) return [value.message];
+			return [...currentValue, value.message];
+		});
+	}, {} as AssignableErrors<T>);
 }
 
 export async function validateFormDataAsync<T extends ZodTypeAny>(
@@ -23,20 +47,21 @@ export async function validateFormDataAsync<T extends ZodTypeAny>(
 
 		return {
 			data,
-			values: filterFormDataValues(formData, valueExcludeFields),
+			values: filterDataValues(
+				preprocessFormData(formData) as Partial<z.infer<T>>,
+				valueExcludeFields
+			),
 			errors: undefined
 		};
 	} catch (err) {
 		if (!(err instanceof z.ZodError)) throw err;
 		return {
 			data: undefined,
-			values: filterFormDataValues(formData, valueExcludeFields),
-			errors: Object.fromEntries(
-				Object.entries(err.formErrors.fieldErrors).map(([key, value]) => [
-					key,
-					value ? value[0] : null
-				])
-			)
+			values: filterDataValues(
+				preprocessFormData(formData) as Partial<z.infer<T>>,
+				valueExcludeFields
+			),
+			errors: shapeErrors(err)
 		};
 	}
 }
@@ -63,13 +88,16 @@ export function validatedAction<T extends ZodTypeAny>(
 
 		const { data, errors, values } = await validateFormDataAsync(schema, formData, options);
 
-		if (errors) return fail(400, { values, fieldErrors: errors });
+		if (errors) return fail(400, { values, fieldErrors: errors, formId });
 
 		const actionResult = await action(
 			{
 				data,
 				wrapResult: (args) => ({
-					values: filterFormDataValues(formData, valueExcludeFields),
+					values: filterDataValues(
+						preprocessFormData(formData) as Partial<z.infer<T>>,
+						valueExcludeFields
+					),
 					...args,
 					formId
 				})
