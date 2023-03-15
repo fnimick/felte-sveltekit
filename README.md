@@ -30,16 +30,16 @@ import { z } from 'zod';
 import { zfd } from 'zod-form-data';
 
 export const userSchema = zfd.formData({
-	name: z.string().min(2).regex(/^A.*$/, { message: 'Name must start with A' }),
-	email: z
-		.string()
-		.email()
-		.refine((email) => !email.includes('spam'), {
-			message: 'Email cannot contain spam.'
-		}),
-	other: z.object({
-		age: zfd.numeric()
-	})
+  name: z.string().min(2).regex(/^A.*$/, { message: 'Name must start with A' }),
+  email: z
+    .string()
+    .email()
+    .refine((email) => !email.includes('spam'), {
+      message: 'Email cannot contain spam.'
+    }),
+  other: z.object({
+    age: zfd.numeric()
+  })
 });
 ```
 
@@ -53,35 +53,35 @@ import { userSchema } from './schema';
 import { fail } from '@sveltejs/kit';
 
 export const actions = {
-	default: validatedAction(
-		'demoForm',
-		userSchema,
-		({
-			data: {
-				name,
-				email,
-				other: { age }
-			},
-			wrapResult
-		}) => {
-			if (email.includes('spam')) {
-				// You can manually assign to fieldErrors to indicate to the user that
-				// there is a problem with a specific field that cannot be detected in
-				// validation; e.g. username in use
-				return fail(400, wrapResult({ fieldErrors: { email: ['Email cannot contain spam.'] } }));
-			}
+  default: validatedAction(
+    'demoForm',
+    userSchema,
+    ({
+      data: {
+        name,
+        email,
+        other: { age }
+      },
+      wrapResult
+    }) => {
+      if (email.includes('spam')) {
+        // You can manually assign to fieldErrors to indicate to the user that
+        // there is a problem with a specific field that cannot be detected in
+        // validation; e.g. username in use
+        return fail(400, wrapResult({ fieldErrors: { email: ['Email cannot contain spam.'] } }));
+      }
 
-			// Return data to the client, with additional data for server rendering.
-			// `data` can be any type, and `formMessage` is a structured type for
-			// displaying form-level errors and other similar messages.
-			return wrapResult({
-				data: { status: 'created' },
-				formMessage: { message: `User ${name} created with age ${age}`, type: 'success' }
-			});
-		},
-		// Exclude email from returned values
-		{ valueExcludeFields: new Set(['email']) }
-	)
+      // Return data to the client, with additional data for server rendering.
+      // `data` can be any type, and `formMessage` is a structured type for
+      // displaying form-level errors and other similar messages.
+      return wrapResult({
+        data: { status: 'created' },
+        formMessage: { message: `User ${name} created with age ${age}`, type: 'success' }
+      });
+    },
+    // Exclude email from returned values
+    { valueExcludeFields: new Set(['email']) }
+  )
 };
 ```
 
@@ -93,46 +93,46 @@ updates to `$page.form` are consumed only by the corresponding form instances.
 
 ```svelte
 <script lang="ts">
-	import { onDestroy } from 'svelte';
-	import { createValidatedForm, SuperDebug } from 'felte-sveltekit/client';
+  import { onDestroy } from 'svelte';
+  import { createValidatedForm, SuperDebug } from 'felte-sveltekit/client';
 
-	import { page } from '$app/stores';
-	import { userSchema } from './schema';
+  import { page } from '$app/stores';
+  import { userSchema } from './schema';
 
-	const { form, errors, message, isSubmitting, data, unsubscribe } = createValidatedForm(
-		'demoForm',
-		userSchema
-	);
+  const { form, errors, message, isSubmitting, data, unsubscribe } = createValidatedForm(
+    'demoForm',
+    userSchema
+  );
 
-	onDestroy(unsubscribe);
+  onDestroy(unsubscribe);
 </script>
 
 <SuperDebug data={{ $data, $errors, page: $page.form }} />
 
 <form method="POST" use:form>
-	<label for="name">Name</label>
-	<input id="name" name="name" type="text" value={$data.name ?? ''} />
-	{#if $errors.name}
-		<p>{$errors.name.join(', ')}</p>
-	{/if}
+  <label for="name">Name</label>
+  <input id="name" name="name" type="text" value={$data.name ?? ''} />
+  {#if $errors.name}
+    <p>{$errors.name.join(', ')}</p>
+  {/if}
 
-	<label for="email">Email</label>
-	<input id="email" name="email" type="email" value={$data.email ?? ''} />
-	{#if $errors.email}
-		<p>{$errors.email.join(', ')}</p>
-	{/if}
+  <label for="email">Email</label>
+  <input id="email" name="email" type="email" value={$data.email ?? ''} />
+  {#if $errors.email}
+    <p>{$errors.email.join(', ')}</p>
+  {/if}
 
-	<label for="age">Age</label>
-	<!-- Notice the namespaced name here -->
-	<input id="age" name="other.age" type="number" value={$data.other?.age ?? ''} />
-	{#if $errors.other?.age}
-		<p>{$errors.other.age.join(', ')}</p>
-	{/if}
-	<button type="submit" disabled={$isSubmitting}>Submit</button>
+  <label for="age">Age</label>
+  <!-- Notice the namespaced name here -->
+  <input id="age" name="other.age" type="number" value={$data.other?.age ?? ''} />
+  {#if $errors.other?.age}
+    <p>{$errors.other.age.join(', ')}</p>
+  {/if}
+  <button type="submit" disabled={$isSubmitting}>Submit</button>
 </form>
 
 {#if $message}
-	<p>{$message.message}</p>
+  <p>{$message.message}</p>
 {/if}
 ```
 
@@ -144,16 +144,16 @@ To disable reset of form after submission, provide a `SubmitHandler` just like y
 
 ```ts
 const { form, errors, message, isSubmitting, data, unsubscribe } = createValidatedForm(
-	'demoForm',
-	userSchema,
-	undefined,
-	{
-		submit:
-			() =>
-			({ update }) => {
-				update({ reset: false });
-			}
-	}
+  'demoForm',
+  userSchema,
+  undefined,
+  {
+    submit:
+      () =>
+      ({ update }) => {
+        update({ reset: false });
+      }
+  }
 );
 ```
 
