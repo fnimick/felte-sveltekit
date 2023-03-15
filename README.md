@@ -1,4 +1,4 @@
-# Felte-Sveltekit: A Simple Validation Connector for Felte + Sveltekit Form Actions
+# Felte-Sveltekit: A simple validation connector for Felte + Sveltekit Form Actions
 
 ## Feature List
 
