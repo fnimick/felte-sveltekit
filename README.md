@@ -1,5 +1,7 @@
 # Felte-Sveltekit: A simple validation connector for Felte + Sveltekit Form Actions
 
+[![npm](https://img.shields.io/npm/v/felte-sveltekit)](https://www.npmjs.com/package/felte-sveltekit)
+
 ## Feature List
 
 - Symmetric server and client-side validation using [Zod](https://zod.dev)
