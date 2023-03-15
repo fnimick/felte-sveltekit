@@ -1,6 +1,6 @@
 import { _update, type AssignableErrors } from '@felte/core';
 import { type Action, fail, type RequestEvent } from '@sveltejs/kit';
-import { z, ZodError, type ZodTypeAny } from 'zod';
+import { z, type ZodError, type ZodTypeAny } from 'zod';
 import { preprocessFormData } from 'zod-form-data';
 
 import type { ValidatedActionData, ValidatorFailArgs } from '../types';
