@@ -10,13 +10,14 @@ import { validator } from '@felte/validator-zod';
 import { createForm } from 'felte';
 import type { z, ZodTypeAny } from 'zod';
 
-import { writable, type Readable, type Unsubscriber } from 'svelte/store';
+import { writable, type Readable } from 'svelte/store';
 
 import type { SubmitFunction } from '$app/forms';
 import { page } from '$app/stores';
 import { isValidatedResultForForm, type FormMessage } from '$lib/types';
 import { createSubmitHandler } from './createSubmitHandler';
 import { browser } from '$app/environment';
+import { onDestroy } from 'svelte';
 
 export type CreateFormResult<Data extends Obj> = Form<Data> &
   KnownHelpers<Data, Paths<Data>> &
@@ -25,7 +26,6 @@ export type CreateFormResult<Data extends Obj> = Form<Data> &
 export type ValidatedForm<T extends ZodTypeAny> = CreateFormResult<z.infer<T>> & {
   message: Readable<FormMessage | undefined>;
   result: Readable<unknown>;
-  unsubscribe: Unsubscriber;
 };
 
 export interface ValidatedFormOptions {
@@ -53,24 +53,28 @@ export function createValidatedForm<T extends ZodTypeAny>(
     ]
   });
 
-  const unsubscribe = page.subscribe(({ form }) => {
-    if (isValidatedResultForForm<T>(form, formId)) {
-      if (!browser) {
-        // If not in the browser, replace the Felte stores to make sure
-        // they are ready for rendering.
+  // Destroy subscriptions on parent component unmount - no need for developers
+  // to manage this themselves.
+  onDestroy(
+    page.subscribe(({ form }) => {
+      if (isValidatedResultForForm<T>(form, formId)) {
+        if (!browser) {
+          // If not in the browser, replace the Felte stores to make sure
+          // they are ready for rendering.
 
-        // Typescript can't prove that empty object is assignable to the error
-        // store, but it is.
+          // Typescript can't prove that empty object is assignable to the error
+          // store, but it is.
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          createFormResult.errors = writable(form.fieldErrors ?? ({} as any));
+          createFormResult.data = writable<z.infer<T>>(form.values);
+        }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        createFormResult.errors = writable(form.fieldErrors ?? ({} as any));
-        createFormResult.data = writable<z.infer<T>>(form.values);
+        createFormResult.setErrors(form.fieldErrors ?? ({} as any));
+        message.set(form.formMessage);
+        result.set(form.result);
       }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      createFormResult.setErrors(form.fieldErrors ?? ({} as any));
-      message.set(form.formMessage);
-      result.set(form.result);
-    }
-  });
+    })
+  );
 
-  return { form, ...createFormResult, message, result, unsubscribe };
+  return { form, ...createFormResult, message, result };
 }

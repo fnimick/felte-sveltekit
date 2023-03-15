@@ -11,6 +11,7 @@
 - Support for dynamic forms, provided by [Felte](https://felte.dev/docs/svelte/dynamic-forms)
 - Value filtering to avoid sending sensitive values such as passwords back to the client when operating without JS
 - Ability to customize pre- and post-submission events using the standard `SubmitFunction` interface from `use:enhance`
+- Automatic subscription cleanup on form unmounting - no need to manually pass an `unsubscribe` hook to `onDestroy`
 
 ## Installation
 
@@ -95,19 +96,16 @@ updates to `$page.form` are consumed only by the corresponding form instances.
 
 ```svelte
 <script lang="ts">
-  import { onDestroy } from 'svelte';
   import { createValidatedForm } from 'felte-sveltekit/client';
   import { SuperDebug } from 'felte-sveltekit/client/SuperDebug.svelte';
 
   import { page } from '$app/stores';
   import { userSchema } from './schema';
 
-  const { form, data, errors, message, result, isSubmitting, unsubscribe } = createValidatedForm(
+  const { form, data, errors, message, result, isSubmitting } = createValidatedForm(
     'demoForm',
     userSchema
   );
-
-  onDestroy(unsubscribe);
 </script>
 
 <SuperDebug data={{ $data, $errors, page: $page.form }} />
@@ -150,7 +148,7 @@ updates to `$page.form` are consumed only by the corresponding form instances.
 To disable reset of form after submission, provide a `SubmitHandler` just like you would to `use:enhance`:
 
 ```ts
-const { form, errors, message, isSubmitting, data, unsubscribe } = createValidatedForm(
+const { form, errors, message, isSubmitting, data } = createValidatedForm(
   'demoForm',
   userSchema,
   undefined,

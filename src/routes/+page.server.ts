@@ -26,7 +26,11 @@ export const actions = {
       // displaying form-level errors and other similar messages.
       return wrapResult({
         result: { status: 'created' },
-        formMessage: { message: `User ${name} created with age ${age}`, type: 'success' }
+        formMessage: {
+          title: 'Creation successful',
+          message: `User ${name} created with age ${age}`,
+          type: 'success'
+        }
       });
     },
     // Exclude email from returned values

@@ -1,12 +1,11 @@
 <script lang="ts">
-  import { onDestroy } from 'svelte';
   import { createValidatedForm } from '$lib/client';
   import SuperDebug from '$lib/client/SuperDebug.svelte';
 
   import { page } from '$app/stores';
   import { userSchema } from './schema';
 
-  const { form, data, errors, message, result, isSubmitting, unsubscribe } = createValidatedForm(
+  const { form, data, errors, message, result, isSubmitting } = createValidatedForm(
     'demoForm',
     userSchema,
     undefined,
@@ -18,8 +17,6 @@
         }
     }
   );
-
-  onDestroy(unsubscribe);
 </script>
 
 <SuperDebug data={{ $data, $errors, page: $page.form }} />
@@ -46,10 +43,16 @@
   <button type="submit" disabled={$isSubmitting}>Submit</button>
 </form>
 
-{#if $message}
+{#if $message?.title}
+  <h3>{$message.title}</h3>
+{/if}
+
+{#if $message?.message}
   <p>{$message.message}</p>
 {/if}
 
 {#if $result}
   Result: <pre>{JSON.stringify($result)}</pre>
 {/if}
+
+<a href="/other">Unmount form.</a>

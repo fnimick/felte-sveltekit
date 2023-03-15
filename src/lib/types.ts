@@ -2,7 +2,8 @@ import type { AssignableErrors } from '@felte/core';
 import type { z, ZodTypeAny } from 'zod';
 
 export interface FormMessage {
-  message: string;
+  title?: string;
+  message?: string;
   code?: string | null;
   type?: 'success' | 'warning' | 'error';
 }
