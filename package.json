@@ -1,6 +1,6 @@
 {
   "name": "felte-sveltekit",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "author": "Francis Nimick <fnimick@gmail.com>",
   "description": "A simple validation connector for Felte + Sveltekit Form Actions",
   "keywords": [
@@ -19,9 +19,10 @@
   "scripts": {
     "dev": "vite dev",
     "build": "vite build && npm run check && npm run package",
+    "preview": "vite preview",
     "package": "svelte-kit sync && svelte-package && publint",
     "prepublishOnly": "npm run package && publint",
-    "test": "playwright test",
+    "test": "playwright test --headed",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "test:unit": "vitest",

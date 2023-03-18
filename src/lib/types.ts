@@ -1,6 +1,8 @@
 import type { AssignableErrors } from '@felte/core';
 import type { z, ZodTypeAny } from 'zod';
 
+export const FELTE_FORM_ID = 'felte-form-id';
+
 export interface FormMessage {
   title?: string;
   message?: string;

@@ -3,7 +3,7 @@ import { type Action, fail, type RequestEvent } from '@sveltejs/kit';
 import { z, type ZodError, type ZodTypeAny } from 'zod';
 import { preprocessFormData } from 'zod-form-data';
 
-import type { ValidatedActionData, ValidatorFailArgs } from '../types';
+import { FELTE_FORM_ID, type ValidatedActionData, type ValidatorFailArgs } from '../types';
 
 // Old function used for filtering raw FormData entries. No longer used now that
 // we have nested values.
@@ -71,7 +71,6 @@ export interface ValidateOptions<T extends ZodTypeAny> {
 }
 
 export function validatedAction<T extends ZodTypeAny>(
-  formId: string,
   schema: T,
   action: (
     args: {
@@ -85,6 +84,10 @@ export function validatedAction<T extends ZodTypeAny>(
   const { valueExcludeFields = new Set() } = options;
   return async (event: RequestEvent) => {
     const formData = await event.request.formData();
+    const formId = formData.get(FELTE_FORM_ID);
+    if (formId == null || typeof formId !== 'string') {
+      throw new Error('Form ID not provided or was not a string.');
+    }
 
     const { data, errors, values } = await validateFormDataAsync(schema, formData, options);
 
