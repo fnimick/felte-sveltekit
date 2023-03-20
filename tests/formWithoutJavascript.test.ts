@@ -64,7 +64,7 @@ test('On successful submit, input values are not reflected', async ({ page }) =>
   await expect(page.locator('p#age-error')).toHaveCount(0);
   await expect(page.locator('p')).toHaveText('User Ace created with age 22');
 
-  expect(await page.getByLabel('Name').inputValue()).toBe('');
-  expect(await page.getByLabel('Email').inputValue()).toBe('');
-  expect(await page.getByLabel('Age').inputValue()).toBe('');
+  await expect(page.getByLabel('Name')).toBeEmpty();
+  await expect(page.getByLabel('Email')).toBeEmpty();
+  await expect(page.getByLabel('Age')).toBeEmpty();
 });
