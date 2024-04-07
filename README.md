@@ -1,4 +1,8 @@
-# Felte-Sveltekit: A simple validation connector for Felte + Sveltekit Form Actions
+# Felte-Sveltekit: A simple validation connector for Felte + Sveltekit Form Actions (deprecated)
+
+## DO NOT USE THIS LIBRARY - use superforms instead!
+
+(https://superforms.rocks/)
 
 [![npm](https://img.shields.io/npm/v/felte-sveltekit)](https://www.npmjs.com/package/felte-sveltekit)
 
